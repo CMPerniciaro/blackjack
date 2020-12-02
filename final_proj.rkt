@@ -42,7 +42,7 @@ A State is:
 #;
 (define (base-state Base-State ...)
   ... (Base-State-completed-split Base-State) ...   ;LOC (if split completed)
-                                                    ;or #f if no split
+  ;or #f if no split
   ... (Base-State-current-hand Base-State) ...      ;current hand of LOC
   ... (Base-State-pending-split Base-State) ...     ;LOC (if split) or #f
   ... (Base-State-bet Base-State) ...               ;current bet (Number)
@@ -69,7 +69,7 @@ A State is:
 (define (split-double-state Split-Double-State ...)
   ... (Split-Double-State-current-hand Split-Double-State) ...  ;current LOC(list)
   ... (Split-Double-State-bet Split-Double-State) ...)          ;current bet
-                                                                ;(number)
+;(number)
 
 (define-struct Round-Over-State (current-hand))
 ;; define template for Round-Over-State
@@ -84,7 +84,7 @@ A State is:
   ... (Game-Over-State-current-hand Game-Over-State) ...)       ;current LOC(list)
 
 
- ; A Deck is:
+; A Deck is:
 ; - [List of Card]
 ; - '()
 
@@ -212,19 +212,43 @@ A State is:
     ;; nothing
     [else            GS]))
 
-;(check-expect (transition (make-GS (make-Base-State #f
-;                                                    (list (make-card 7 "Diamond")
-;                                                          (make-card 5 "Club"))
-;                                                    #f 1 #f)
-;                                   (list (make-card 9 "Club"))
-;                                   3) "h")
-;              (make-GS (make-Game-Over-State (list (make-card 7 "Diamond")
-;                                                   (make-card 5 "Club")
-;                                                   (make-card 9 "Club")))
-;                       '()
-;                       5))
+;; Examples
 
-;; hit, not win, not bust
+;; Base-State-Examples
+;; hit => win => game-over 
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list (make-card 7 "Diamond")
+                                                          (make-card 5 "Club"))
+                                                    #f 1 #f)
+                                   (list (make-card 9 "Club"))
+                                   3) "h")
+              (make-GS (make-Game-Over-State (list (make-card 7 "Diamond")
+                                                   (make-card 5 "Club")
+                                                   (make-card 9 "Club")))
+                       '()
+                       5))
+
+;hit => bust => round-over
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 10 "Diamond")
+                                                     (make-card 5 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card "Jack" "Club"))
+                                   10)
+                          "h")
+              (make-GS (make-Round-Over-State (list
+                                               (make-card 10 "Diamond")
+                                               (make-card 5 "Heart")
+                                               (make-card "Jack" "Club")))
+                       '()
+                       9))
+              
+
+;; hit => not win, not bust => base-state
 (check-expect (transition (make-GS (make-Base-State #f
                                                     (list (make-card 7 "Diamond")
                                                           (make-card 5 "Club"))
@@ -238,6 +262,44 @@ A State is:
                                         #f 1 #f)
                        '()
                        3))
+; hold => win => game-over
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 10 "Diamond")
+                                                     (make-card 10 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card "Jack" "Club"))
+                                   10)
+                          " ")
+              (make-GS (make-Game-Over-State (list
+                                               (make-card 10 "Diamond")
+                                               (make-card 10 "Heart")))
+                       (list
+                                    (make-card "Jack" "Club"))
+                       11))
+
+;; Double State Examples
+
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 5 "Diamond")
+                                                     (make-card 6 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card "Jack" "Club"))
+                                   10)
+                          "d")
+              (make-GS (make-Round-Over-State (list
+                                               (make-card 10 "Diamond")
+                                               (make-card 10 "Heart")
+                                               (make-card "Jack" "Club")))
+                      '()
+                       8))
 
 ;;(check-expect (transition (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
 ;; (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
@@ -305,17 +367,4 @@ A State is:
 ;; test fails because i need it to look like the splits are splitting but unsure 
 ;(check-expect (split-checker (make-GS (make-Base-State #f (list 7 7) #t) (list 7 7) 3))
 ;              (make-GS (make-Split-State (list 7)) (list 7) 3)) 
-
-
-
-
-;; dealer hits function
-
-;(define (dealer-handler LOC)
-;  (cond
-;    [(>= add-list(LOC) 17) hold]
-;    [(< add-list(LOC) 17) hit]
-;    []))
-
-
 
