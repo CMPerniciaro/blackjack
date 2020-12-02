@@ -294,12 +294,14 @@ A State is:
                                     (make-card "Jack" "Club"))
                                    10)
                           "d")
-              (make-GS (make-Round-Over-State (list
+              (make-GS (make-Game-Over-State (list
                                                (make-card 10 "Diamond")
                                                (make-card 10 "Heart")
                                                (make-card "Jack" "Club")))
                       '()
                       12))
+
+
 
 
 
