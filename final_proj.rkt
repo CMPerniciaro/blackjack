@@ -200,6 +200,8 @@ A GS is :
                                              (make-card 10 "Club")
                                              (make-card 6 "Club")
                                              (make-card 5 "Club"))
+                                            #f
+                                            3
                                             #f)
                                            (list (make-card 7 "Club"))
                                            3))
