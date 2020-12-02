@@ -282,7 +282,7 @@ A State is:
                        11))
 
 ;; Double State Examples
-
+;; double => win 
 (check-expect (transition (make-GS (make-Base-State #f
                                                     (list
                                                      (make-card 5 "Diamond")
@@ -299,7 +299,9 @@ A State is:
                                                (make-card 10 "Heart")
                                                (make-card "Jack" "Club")))
                       '()
-                       8))
+                      12))
+
+
 
 ;;(check-expect (transition (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
 ;; (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
