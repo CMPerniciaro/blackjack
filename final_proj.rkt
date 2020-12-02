@@ -1,16 +1,95 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname final_proj) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
-
-
 ;; Data Definitions
+         
+;; A Game-State is :
+;; - (make-GS State LOC Number)
+(define-struct GS (state shoe wallet))
 
-; A Deck is:
+;; define template for GS
+#;
+(define (game-state GS ...)
+  ... (GS-state GS) ...           ;the state of the same
+  ... (GS-shoe GS)  ...           ;the list of cards that make up the deck
+  ... (GS-wallet)   ...)          ;the player's money count (number)
+
+#|
+
+create invariants (eg bust invariant in base-state)
+
+;; helper function that takes in state (what state am i in, and what key got pressed)
+
+A State is:
+- (make-Base-State (LOC or #f) LOC (LOC or #f) Number (Number or #f)  (PC1)
+
+   INV: current-hand, pending-split cannot be bust;
+        cannot have (LOC) LOC (LOC)
+        cannot have #f LOC #f AND Number Number
+        cannot have #f LOC LOC AND Number #f
+        if pending-split is LOC <=> then bet 2 is Number 
+
+
+- (make-Double-State LOC Number)                           (PC2)
+- (make-Split-State LOC Number)                            (PC3)
+- (make-Split-Double-State LOC Number)                     (PC4)
+- (make-Round-Over-State LOC)
+- (make-Game-Over-State LOC)
+|#
+
+(define-struct Base-State (completed-split current-hand pending-split bet split-bet))
+;; define template for Base-State
+#;
+(define (base-state Base-State ...)
+  ... (Base-State-completed-split Base-State) ...   ;LOC (if split completed)
+                                                    ;or #f if no split
+  ... (Base-State-current-hand Base-State) ...      ;current hand of LOC
+  ... (Base-State-pending-split Base-State) ...     ;LOC (if split) or #f
+  ... (Base-State-bet Base-State) ...               ;current bet (Number)
+  ... (Base-State-split-bet Base-State) ...)        ;number (if split) or #f
+
+
+(define-struct Double-State (current-hand bet))
+;; define template for Double-State
+#;
+(define (double-state Double-State ...)
+  ... (Double-State-current-hand Double-State) ...  ;current LOC
+  ... (Double-State-bet Double-State) ...)          ;current bet (number)
+
+(define-struct Split-State (current-hand bet))
+;; define template for Split-State
+#;
+(define (split-state Split-State ...)
+  ... (Split-State-current-hand Split-State) ...  ;current LOC
+  ... (Split-State-bet Split-State) ...)          ;current bet (number)
+
+(define-struct Split-Double-State (current-hand bet))
+;; define template for Split-Double-State
+#;
+(define (split-double-state Split-Double-State ...)
+  ... (Split-Double-State-current-hand Split-Double-State) ...  ;current LOC(list)
+  ... (Split-Double-State-bet Split-Double-State) ...)          ;current bet
+                                                                ;(number)
+
+(define-struct Round-Over-State (current-hand))
+;; define template for Round-Over-State
+#;
+(define (round-over-state Round-Over-State ...)
+  ... (Round-Over-State-current-hand Round-Over-State) ...)   ;current LOC(list)
+
+(define-struct Game-Over-State (current-hand))
+;; define template for Game-Over-State
+#;
+(define (game-over-state Game-Over-State ...)
+  ... (Game-Over-State-current-hand Game-Over-State) ...)       ;current LOC(list)
+
+
+ ; A Deck is:
 ; - [List of Card]
 ; - '()
 
 ;(define-struct deck (LIST-OF-CARDS))
-
+  
 ; A Wallet is:
 ; - Positive Number
 ; - '()
@@ -41,54 +120,9 @@
 ;; a [Listof X] is either:
 ;; - '()
 ;; - (cons X [Listof X])
-         
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;
-#|
-
-create invariants (eg bust invariant in base-state)
-
-;; helper function that takes in state (what state am i in, and what key got pressed)
-
-A State is:
-- (make-Base-State (LOC or #f) LOC (LOC or #f) Number (Number or #f)  (PC1)
-
-   INV: current-hand, pending-split cannot be bust;
-        cannot have (LOC) LOC (LOC)
-        cannot have #f LOC #f AND Number Number
-        cannot have #f LOC LOC AND Number #f
-        if pending-split is LOC <=> then bet 2 is Number 
-
-
-- (make-Double-State LOC Number)                           (PC2)
-- (make-Split-State LOC Number)                            (PC3)
-- (make-Split-Double-State LOC Number)                     (PC4)
-- (make-Round-Over-State LOC)
-- (make-Game-Over-State LOC)
-
-A GS is :
-- (make-GS State LOC Number)
-|#
-
-;; add bets (great! names)
-
-(define-struct GS (state shoe wallet))
-
-(define-struct Base-State (completed-split current-hand pending-split bet split-bet))
-(define-struct Double-State (current-hand bet))
-(define-struct Split-State (current-hand bet))
-(define-struct Split-Double-State (current-hand bet))
-; no bets 
-(define-struct Round-Over-State (current-hand))
-(define-struct Game-Over-State (current-hand))
-
-;; finish game state
 
 ;; functions = edges
-
-;; transition : GS String -> GS
 
 (define LOC1 (cons (make-card 10 "Spade") (cons (make-card 11 "Diamond")'())))
 (define LOC2 (list 1 2 3 4))
@@ -116,21 +150,6 @@ A GS is :
                          (make-card 5 "Heart")
                          (make-card 2 "Diamond")))
               14)
-
-;; value-checker2 : GS -> Boolean
-;; checks if LOC in GS is equal to 21
-(define (value-checker2 GS)
-  (cond
-    [(equal? 21 (add-list (GS-shoe GS))) #true]
-    [else        #false]))
-
-;(check-expect (value-checker2 (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3)) #f)
-;(check-expect (value-checker2 (make-GS (make-Base-State #f (list 10 11) #f) (list 10 11) 3)) #t)
-
-
-;; transition : GS key-input -> GS
-;; checks if LOC in GS is equal to 21; returns Game-Over-State if 21, else
-;; returns original GS
 
 ;; over-21? : LOC -> Boolean
 
