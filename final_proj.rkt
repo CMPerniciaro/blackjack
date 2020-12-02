@@ -199,8 +199,11 @@ A State is:
 (define (transition GS key)
   (cond
     ;; hit
-    [(string=? key "h")
-     (base-state-checker GS)]
+;    [(string=? key "h")
+;     (base-state-checker GS)]
+    [(make-GS (GS-state GS)
+           (GS-state GS)
+           (GS-wallet GS)) ]
     [(string=? key " ")
      #f]
     ;; double
@@ -219,9 +222,13 @@ A State is:
 (check-expect (transition (make-GS (make-Base-State #f
                                                     (list (make-card 7 "Diamond")
                                                           (make-card 5 "Club"))
-                                                    #f 1 #f)
-                                   (list (make-card 9 "Club"))
-                                   3) "h")
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card 9 "Club"))
+                                   3)
+                          "h")
               (make-GS (make-Game-Over-State (list (make-card 7 "Diamond")
                                                    (make-card 5 "Club")
                                                    (make-card 9 "Club")))
@@ -275,11 +282,11 @@ A State is:
                                    10)
                           " ")
               (make-GS (make-Game-Over-State (list
-                                               (make-card 10 "Diamond")
-                                               (make-card 10 "Heart")))
+                                              (make-card 10 "Diamond")
+                                              (make-card 10 "Heart")))
                        (list
-                                    (make-card "Jack" "Club"))
-                       11))
+                        (make-card "Jack" "Club"))
+                       12))
 
 ;; Double State Examples
 ;; double => win 
@@ -295,11 +302,342 @@ A State is:
                                    10)
                           "d")
               (make-GS (make-Game-Over-State (list
+                                              (make-card 10 "Diamond")
+                                              (make-card 10 "Heart")
+                                              (make-card "Jack" "Club")))
+                       '()
+                       12))
+
+;; double => loss
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 5 "Diamond")
+                                                     (make-card 6 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card 2 "Club"))
+                                   10)
+                          "d")
+              (make-GS (make-Game-Over-State (list
+                                              (make-card 10 "Diamond")
+                                              (make-card 10 "Heart")
+                                              (make-card 2 "Club")))
+                       '()
+                       8))
+
+;; Split Examples
+; split : win split1, lose split2
+;; get split => choose to split => base-state
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 6 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card 2 "Club")
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "s")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 2 "Club")
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       10))
+
+;; choose to split: hit on first hand, dont bust => base-state
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond"))
+                                                    (list
+                                                     (make-card 6 "Heart"))
+                                                    1
+                                                    1) 
+                                   (list
+                                    (make-card 2 "Club")
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "h")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       10))
+;; split => hit again on first split => win
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 2 "Club"))
+                                                    (list
+                                                     (make-card 6 "Heart"))
+                                                    1
+                                                    1)
+                                   (list
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "h")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club")
+                                         (make-card 10 "Diamond"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 10 "Heart"))
+                       12))
+;; split => win on first split, hit on second split => no bust => base state
+;; note : should bet = 0?
+(check-expect (transition (make-GS (make-Base-State 
+                                    (list
+                                     (make-card 6 "Diamond")
+                                     (make-card 2 "Club")
+                                     (make-card 10 "Diamond"))
+                                    (list
+                                     (make-card 6 "Heart"))
+                                    #f
+                                    0
+                                    1)
+                                   (list
+                                    (make-card 10 "Heart"))
+                                   12)
+                          "h")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club")
+                                         (make-card 10 "Diamond"))
+                                        (list
+                                         (make-card 6 "Heart")
+                                         (make-card 10 "Heart"))
+                                        0
+                                        1)
+                       '()
+                       12))
+;; split => win on first split, hold on second split => lose => round over
+(check-expect (transition (make-GS (make-Base-State (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 2 "Club")
+                                                     (make-card 10 "Diamond"))
+                                                    (list
+                                                     (make-card 6 "Heart")
+                                                     (make-card 10 "Heart"))
+                                                    #f
+                                                    0
+                                                    1)
+                                   '()
+                                   12)
+                          " ")
+              (make-GS (make-Round-Over-State 
+                        (list
+                         (make-card 6 "Diamond")
+                         (make-card 2 "Club")
+                         (make-card 10 "Diamond")
+                         (make-card 6 "Heart")
+                         (make-card 10 "Heart")))
+                                  
+                       '()
+                       11))
+
+
+;; split : lose both splits
+;; choose to split => base-state
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 6 "Heart"))
+                                                    #f
+                                                    1
+                                                    #f)
+                                   (list
+                                    (make-card 2 "Club")
+                                    (make-card 8 "Spade")
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "s")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 2 "Club")
+                        (make-card 8 "Spade")
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       10))
+
+;; choose to split: hit on first hand, dont bust => base-state
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond"))
+                                                    (list
+                                                     (make-card 6 "Heart"))
+                                                    1
+                                                    1) 
+                                   (list
+                                    (make-card 2 "Club")
+                                    (make-card 8 "Spade")
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "h")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 8 "Spade")
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       10))
+;; split => hit again on first split => not bust => base state
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 2 "Club"))
+                                                    (list
+                                                     (make-card 6 "Heart"))
+                                                    1
+                                                    1)
+                                   (list
+                                    (make-card 8 "Spade")
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   10)
+                          "h")
+              (make-GS (make-Base-State #f
+                                        (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club")
+                                         (make-card 8 "Spade"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        1
+                                        1)
+                       (list
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       9))
+
+;; split => hold on first split => lose first split
+(check-expect (transition (make-GS (make-Base-State #f
+                                                    (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 2 "Club")
+                                                     (make-card 8 "Spade"))
+                                                    (list
+                                                     (make-card 6 "Heart"))
+                                                    0
+                                                    1)
+                                   (list
+                                    (make-card 10 "Diamond")
+                                    (make-card 10 "Heart"))
+                                   9)
+                          " ")
+              (make-GS (make-Base-State (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club")
+                                         (make-card 8 "Spade"))
+                                        (list
+                                         (make-card 6 "Heart"))
+                                        #f
+                                        0
+                                        1)
+                       (list
+                        (make-card 10 "Diamond")
+                        (make-card 10 "Heart"))
+                       9))
+
+;; split => lost on first split, hit on second split => no bust => base state
+;; note : should bet = 0?
+(check-expect (transition (make-GS (make-Base-State 
+                                    (list
+                                     (make-card 6 "Diamond")
+                                     (make-card 2 "Club")
+                                     (make-card 8 "Spade"))
+                                    (list
+                                     (make-card 6 "Heart"))
+                                    #f
+                                    0
+                                    1)
+                                   (list
+                                    (make-card 10 "Heart")
+                                    (make-card 10 "Diamond"))
+                                   9)
+                          "h")
+              (make-GS (make-Base-State (list
+                                         (make-card 6 "Diamond")
+                                         (make-card 2 "Club")
+                                         (make-card 8 "Spade"))
+                                        (list
+                                         (make-card 6 "Heart")
+                                         (make-card 10 "Diamond"))
+                                        #f
+                                        0
+                                        1)
+                       (list
+                        (make-card 10 "Heart"))
+                       9))
+
+;; split => lost first split, hit on second split => bust => round over state
+(check-expect (transition (make-GS (make-Base-State (list
+                                                     (make-card 6 "Diamond")
+                                                     (make-card 2 "Club")
+                                                     (make-card 8 "Spade"))
+                                                    (list
+                                                     (make-card 6 "Heart")
+                                                     (make-card 10 "Diamond"))
+                                                    #f
+                                                    0
+                                                    1)
+                                   (list
+                                    (make-card 10 "Heart"))
+                                   9)
+                          "h")
+              (make-GS (make-Round-Over-State (list
+                                               (make-card 6 "Diamond")
+                                               (make-card 2 "Club")
+                                               (make-card 8 "Spade")
+                                               (make-card 6 "Heart")
                                                (make-card 10 "Diamond")
-                                               (make-card 10 "Heart")
-                                               (make-card "Jack" "Club")))
-                      '()
-                      12))
+                                               (make-card 10 "Heart")))
+                       '()
+                       8))
+
+
+
+
+   
 
 
 
