@@ -1,63 +1,20 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname final_proj) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 
 
 ;; Data Definitions
 
-;; From library: returns a list of 52 cards, sorted lowest suit, then lowest
-;; value
-;(make-deck)
-
 ; A Deck is:
 ; - [List of Card]
 ; - '()
+
 ;(define-struct deck (LIST-OF-CARDS))
-
-;; From library: returns a single card given a bitmap for the front, and values
-;; for the card's suit and value
-;(make-card)
-
 
 ; A Wallet is:
 ; - Positive Number
 ; - '()
 (define-struct wallet (amount))
-
-;; Possible Functions
-
-;; shuffle-deck: List -> List
-;; shuffles the deck
-#|(define (shuffle-deck deck ...)
-  ...)
-
-;; flip-card: Card -> Card
-;; performs the card animation
-(define (flip-card card ...)
-  ...)
-
-;; hand-value-calculator: [List of Card] -> Positive Number
-;; calculates the value of a hand 
-(define (hand-value-calculator ...)
-  ...)
-
-;; wallet-update: Wallet -> Wallet
-;; updates the wallet amount based on betting 
-(define (wallet-update ...)
-  ...)
-
-;; bust-checker: [List of Card] -> Positive Number
-;; checks if a hand is over 21
-(define (bust-checker ...)
-  ...)
-
-;; blackjack-checker: [List of Card] -> Positive Number
-;; checks if a hand is equal to 21
-(define (blackjack-checker ...)
-  ...)
-|#
-;; etc splitting, doubling
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 ; A Suit is either:
@@ -190,9 +147,9 @@ A GS is :
       (GS-shoe GS)
       (GS-wallet GS))]
     ;; hit/bust
-    [()]
+    ;;[()]
     ;; hit/no bust
-    []))
+    [else #f]))
 
 (check-expect (base-state-checker (make-GS (make-Base-State
                                             #f
