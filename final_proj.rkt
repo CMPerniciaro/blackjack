@@ -2,6 +2,8 @@
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname final_proj) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 (require racket/list)
+(require 2htdp/image)
+(require 2htdp/planetcute)
 
 ;; Data Definitions
          
@@ -24,11 +26,6 @@
 (define-struct Round-Over-State (current-hand))
 (define-struct Game-Over-State (current-hand))
 #|
-
-create invariants (eg bust invariant in base-state)
-
-;; helper function that takes in state (what state am i in, and what key got pressed)
-
 A State is:
 - (make-Base-State (LOC or #f) LOC (LOC or #f) Number (Number or #f)  (PC1)
 
@@ -66,14 +63,10 @@ A State is:
 ; A Deck is:
 ; - [List of Card]
 ; - '()
-
-;(define-struct deck (LIST-OF-CARDS))
   
 ; A Wallet is:
 ; - Positive Number
 ; - '()
-(define-struct wallet (amount))
-
 
 ; A Suit is either:
 ; - "Diamond"
@@ -100,15 +93,114 @@ A State is:
 ;; - '()
 ;; - (cons X [Listof X])
 
-
-;; functions = edges
-
 (define LOC1 (cons (make-card 10 "Spade") (cons (make-card 11 "Diamond")'())))
 (define LOC2 (list 1 2 3 4))
+(define deck1 (list
+               (make-card 2 "Club")
+               (make-card 3 "Club")
+               (make-card 4 "Club")
+               (make-card 5 "Club")
+               (make-card 6 "Club")
+               (make-card 7 "Club")))
+
+;; card images
+(define two-diamond
+  (overlay
+   (text "2" 45 "red")
+   (overlay/align "left" "top"
+                  (rhombus 40 45 "solid" "red")
+                  (overlay/align "right" "bottom"
+                                 (rhombus 40 45 "solid" "red")
+                                 (rectangle 200 300 'outline' "blue")))))
+
+(define club
+  (overlay/offset
+   (overlay/offset
+    (circle 15 "solid" "black")
+    0
+    21
+    (overlay/offset
+     (circle 15 "solid" "black")
+     26 0
+     (circle 15 "solid" "black")))
+   0
+   25
+   (triangle 25 "solid" "black")))
+
+(define two-club (overlay
+                  (text "2" 45 "black")
+                  (overlay/align "left" "top"
+                                 club
+                                 (overlay/align "right" "bottom"
+                                                club
+                                                (rectangle 200 300 'outline' "blue")))))
+
+(define heart-img
+  (overlay/offset
+   (rotate 22
+           (rhombus 40 45 "solid" "red"))
+   26
+   0
+   (rotate 160
+           (rhombus 40 45 "solid" "red"))))
+
+(define two-heart (overlay
+                   (text "2" 45 "red")
+                   (overlay/align "left" "top"
+                                  heart-img
+                                  (overlay/align "right" "bottom"
+                                                 heart-img
+                                                 (rectangle 200 300 'outline' "blue")))))
 
 
+(define spade-img
+  (overlay/offset 
+   (flip-vertical
+    (overlay/offset
+     (rotate 22
+             (rhombus 40 45 "solid" "black"))
+     26
+     0
+     (rotate 160
+             (rhombus 40 45 "solid" "black"))))
+   0
+   20
+   (triangle 25 "solid" "black")))
 
-;; given a card, returns the value 
+(define two-spade (overlay
+                   (text "2" 45 "black")
+                   (overlay/align "left" "top"
+                                  spade-img
+                                  (overlay/align "right" "bottom"
+                                                 spade-img
+                                                 (rectangle 200 300 'outline' "blue")))))
+
+
+  
+                                                 
+
+
+;; draw : LOC -> Image
+;; takes in a list, and draws the correct card 
+(define (draw LOC)
+  (cond
+    [(and (equal? (card-value (first LOC)) 2) (equal? (card-suit (first LOC)) "Diamond"))
+     two-diamond]
+    [(and (equal? (card-value (first LOC)) 2) (equal? (card-suit (first LOC)) "Club"))
+     two-club]
+    [(and (equal? (card-value (first LOC)) 2) (equal? (card-suit (first LOC)) "Spade"))
+     two-spade]
+    [(and (equal? (card-value (first LOC)) 2) (equal? (card-suit (first LOC)) "Heart"))
+     two-heart]
+    [else #f]))
+
+(check-expect (draw (list (make-card 2 "Diamond")
+                          (make-card 4 "Diamond")))
+              two-diamond)
+(check-expect (draw (list (make-card 2 "Club")
+                          (make-card 4 "Diamond")))
+              two-club)
+
 
 
 ;; add-list : LOC -> Number
@@ -131,15 +223,6 @@ A State is:
                          (make-card 2 "Diamond")))
               14)
 
-
-
-
-
-
-;; deal-cards : shoe -> LOC
-;; deals cards
-;;(define (deal-cards shoe)
-  
 
 ;(define (state-transition s shoe wallet key)
 ;  (cond
@@ -179,6 +262,7 @@ A State is:
                     (GS-shoe GS)             
                     (GS-wallet)
                     key))
+
 ;
 ;(check-expect (gs-transition (make-GS (make-Base-State #f
 ;                                                       (list (make-card 7 "Diamond")
@@ -224,10 +308,21 @@ A State is:
 ;                       '()
 ;                       5))
 
-;hit => bust => round-over
+
+;; dealers-cards : shoe -> shoe
+;(define (dealers-cards shoe)
+;  (cond
+;    [(>= (add-list (flatten (cons (first shoe) (first (rest shoe))))) 17)
+;     shoe]
+;    [else #f]))
+;
+;(check-expect (dealers-cards (list (make-card 4 "Club")
+;                                   (make-card 5 "Club")))
+;              #f)
+
 
 ;; state-transition : state shoe wallet key -> GS
-;; manipulates players hands based on key input
+;; depending on `s` and `key, player's hand, shoe and wallet
 (define (state-transition s shoe wallet key)
   (cond
     [(Base-State? s)
@@ -246,6 +341,7 @@ A State is:
                                                '()))))
             (rest shoe)
             (+ wallet (* 2 (Base-State-bet s))))]
+          ;; busting
           [( > (add-list (flatten
                           (cons (first shoe)
                                 (cons (Base-State-current-hand s)
@@ -268,7 +364,6 @@ A State is:
                                                              '()))))))
                (rest shoe)
                (- wallet (Base-State-bet s)))])]
-          ;; busting
           [else 
            ;; not winning, not busting
            (make-GS
@@ -413,25 +508,35 @@ A State is:
       shoe
       wallet)]
     [(Game-Over-State? s)
-     ;... (Game-Over-State-current-hand s) ...
-     #f]))
+     (make-GS
+      (make-Game-Over-State (Game-Over-State-current-hand s))
+      shoe
+      wallet)]))
 
-
-(check-expect (state-transition (make-Round-Over-State
-                                 (list (make-card 2 "Club")
-                                       (make-card 2 "Heart")))
-                                '()
+;; Tests as Examples:                                              
+(check-expect (state-transition (make-Base-State (list
+                                                  (make-card 10 "Club")
+                                                  (make-card 10 "Heart"))
+                                                 (list
+                                                  (make-card 10 "Diamond")
+                                                  (make-card 7 "Heart"))
+                                                 #f
+                                                 3
+                                                 3)
+                                (list
+                                 (make-card 6 "Club")
+                                 (make-card 4 "Diamond"))
                                 10
-                                " ")
-              (make-GS
-               (make-Round-Over-State
-                (list (make-card 2 "Club")
-                      (make-card 2 "Heart")))
-               '()
-               10))
-                                 
-                               
-                                 
+                                "h")
+              (make-GS (make-Round-Over-State (list
+                                               (make-card 10 "Club")
+                                               (make-card 10 "Heart")
+                                               (make-card 6 "Club")
+                                               (make-card 10 "Diamond")
+                                               (make-card 7 "Heart")))
+                       (list (make-card 4 "Diamond"))
+                       7))
+                                           
 
 ;; hit => get 21 = win => game-over-state
 (check-expect (state-transition (make-Base-State #f
@@ -657,7 +762,7 @@ A State is:
                         (make-card 4 "Heart"))
                        10))
 
-;; choose double
+;; choose double => lose
 (check-expect (state-transition (make-Split-Double-State
                                  (list (make-card 5 "Club")
                                        (make-card 5 "Heart"))
@@ -674,8 +779,23 @@ A State is:
                        (list
                         (make-card 4 "Heart"))
                        8))
+;; choose double => 21
+(check-expect (state-transition (make-Split-Double-State (list
+                                                          (make-card 9 "Heart")
+                                                          (make-card 10 "Club"))
+                                                         3)
+                                (list
+                                 (make-card 2 "Heart"))
+                                10
+                                "d")
+              (make-GS (make-Game-Over-State (list
+                                              (make-card 2 "Heart")
+                                              (make-card 9 "Heart")
+                                              (make-card 10 "Club")))
+                       '()
+                       16))
 
-;; no double, no split
+;; no double, no split => base state
 (check-expect (state-transition (make-Split-Double-State
                                  (list (make-card 5 "Club")
                                        (make-card 5 "Heart"))
@@ -924,58 +1044,45 @@ A State is:
 ;                       8))
 
 
+(check-expect (state-transition (make-Game-Over-State
+                                 (list (make-card 2 "Club")
+                                       (make-card 2 "Heart")))
+                                '()
+                                10
+                                " ")
+              (make-GS
+               (make-Game-Over-State
+                (list (make-card 2 "Club")
+                      (make-card 2 "Heart")))
+               '()
+               10))
 
+(check-expect (state-transition (make-Round-Over-State
+                                 (list (make-card 2 "Club")
+                                       (make-card 2 "Heart")))
+                                '()
+                                10
+                                " ")
+              (make-GS
+               (make-Round-Over-State
+                (list (make-card 2 "Club")
+                      (make-card 2 "Heart")))
+               '()
+               10))
 
    
+#|
+PSA: not worked on yet
 
+(define (start _dummy)
+  (big-bang (make-fw (/ WORLD-WIDTH 2) "right" '() 0)
+    [on-tick tick 1/200]
+    [on-key  key]
+    [to-draw draw]))
 
+(big-bang GS0
+  [on-tick tick 1/200]
+  [on-key  key]
+  [to-draw draw])
 
-
-
-;;(check-expect (transition (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
-;; (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
-
-;; need test case for each edge
-
-;; bust-checker3 : GS -> GS
-;; checks if LOC in GS goes over 21; if LOC > 21, make LOC '() and shoe '(),
-;; else, return original GS
-(define (bust-checker3 GS)
-  (cond
-    [(> (add-list (GS-shoe GS)) 21)
-     (make-GS (make-Round-Over-State '())
-              '() ;; need helper function to take out cards from shoe?
-              (GS-wallet GS))]
-    [else                           (make-GS
-                                     (GS-state GS) ;;  do i need to specify base state
-                                     (GS-shoe GS)
-                                     (GS-wallet GS))]))
-
-;(check-expect (bust-checker3 (make-GS (make-Base-State #f (list 11 11) #f) (list 11 11) 3))
-;              (make-GS (make-Round-Over-State '()) '() 3))
-;(check-expect (bust-checker3 (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
-;              (make-GS (make-Base-State #f (list 1 2 3) #f) (list 1 2 3) 3))
-
-
-;; double-checker : GS -> GS
-;; checks for doubles; returns to og GS if no doubles, o.w. goes to Double-GS
-(define (split-checker GS)
-  (cond
-    [(equal? (first (GS-shoe GS)) (rest (GS-shoe GS)))
-     (make-GS
-      (make-Split-State (GS-shoe GS))
-      (GS-shoe GS) ;; need to double bet amount
-      (GS-wallet GS))]
-    [else
-     (make-GS
-      (GS-state GS) ;;  do i need to specify base state
-      (GS-shoe GS)
-      (GS-wallet GS))]))
-
-;(check-expect (split-checker (make-GS (make-Base-State #f (list 1 2) #f) (list 1 2) 3))
-;              (make-GS (make-Base-State #f (list 1 2) #f) (list 1 2) 3))
-
-;; test fails because i need it to look like the splits are splitting but unsure 
-;(check-expect (split-checker (make-GS (make-Base-State #f (list 7 7) #t) (list 7 7) 3))
-;              (make-GS (make-Split-State (list 7)) (list 7) 3)) 
-
+|#
