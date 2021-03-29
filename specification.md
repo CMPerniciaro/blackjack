@@ -10,13 +10,6 @@ Terms:
                   or 11. A player can then double their original bet and be
                   dealt one more card. 
 
-UI Specifications:
-- cards will have a flipping animation
-- pre-determined bet amounts on the screen 
-- keyboard controls to select bets, choose moves, etc.
-- display wallet amount
-- win and lose message/animation
-
 1. Player is given starting "wallet" amount for betting
 2. Deck(s) are shuffled
 3. Player makes initial bet
