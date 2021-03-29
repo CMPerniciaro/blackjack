@@ -1,100 +1,137 @@
-# blackjack
+# Final Project
 
-;; Specification:
+For the final project, you must work alone. You will design a video
+game in ISL+λ. This must be a big-bang game in the same style as the
+falling game from assignment 4 (but not, obviously, the falling game).
 
-#|
+## Proposal (due during class on Nov 11, worth 5 points)
 
-UI Specifications:
-- cards will have a flipping animation
-- pre-determined bet amounts on the screen 
-- keyboard controls to select bets, choose moves, etc.
-- display wallet amount
-- win and lose message/animation
+For your proposal, prepare two games that you would be willing to
+implement.  Almost any game is acceptable, but you _may not_ choose
+(any variation of) the snake game. You also may not choose any
+variant of the fallers game. Find a new game.
 
-Terms:
-- Hit : take another card from the deck
-- Hold : not take another card from the deck
-- Bust : go over 21 and lose
-- Blackjack : Having or getting your cards to equal to 21
-- Ace : can equal a 1 or an 11 at the player's discretion
-- Splitting Pairs : Player can split pairs when initial card are the same
-                    denomination (i.e., two sixes, two jacks)
-- Doubling Down : Player can double down when initial card dealt total to 9, 10,
-                  or 11. A player can then double their original bet and be
-                  dealt one more card. 
+For inspiration, check out http://www.gamedesign.jp/. See also [Chat
+Noir](https://docs.racket-lang.org/games/chat-noir.html) in the PLT
+Games app that comes with Racket.
 
-1. Player is given starting "wallet" amount for betting
-2. Deck(s) are shuffled
-3. Player makes initial bet
-4. Player dealt 2 cards face up
-5. Dealer dealt two cards, one face up, one face down
-6. Having Blackjack right away:
-   6a. Player has 21 right away:
-       (6a.1) The dealer does not have 21 so the player will receive 1.5x the
-              original bet from dealer
-       (6a.2) The dealer also has 21 so the Player gets their original bet back
-   6b. Dealer has 21 right away:
-       (6b.1) The player does not have 21 right away so the dealer wins and
-              takes the bets
-       (6b.2) See (6a.2)
-7. The Player can Hit or Hold
-   7a. Hit 
-       (7a.1) Bust
-              (7a.4) If player's wallet is less than or equal to 0, the game
-                     is over and the player loses 
-       (7a.2) Get closer to 21
-       (7a.3) The player wins and collects their original bet x2
-   7b. Hold
-       (7b.1) Player wins because they are the closest to 21 and collects x2
-              their original bet 
-       (7b.2) Lose because dealer was closer
-              (7b.3) If player's wallet is less than or equal to 0, the game
-                     is over and the player loses 
-8. The Dealer can Hit or Hold
-   8a. Dealer will hit until card total 17+
-       (8a.1) Ace = 11 when it can total their card to 17+
-   8b. Dealer will hold when cards total 17+
-9. Player can Split pairs
-   9a. Split (treat cards as two separate hands)
-       (9a1) Original bet will be doubled and split across the two cards
-       (9a2) Card1 will be played normally
-             (9a2.1) See 7
-       (9a3) Card2 will be played normally
-             (9a3.1) See 7
-   9b. Don't Split pairs
-       (9b.1) Play normally (See 7)
-10. Player can Double Down
-    10a. Double down
-       (10a1) Player doubles amount of original bet and is dealt one more card
-       (10a2) Player then plays normally (See 7)
-    10b. Don't double down
-       (10b.1) Play normally (See 7)
-|#
+Pick games that you think you'll enjoy playing and sharing with your
+friends and family.
 
-;; Data Definition (due in private meetings on Nov 19th)
+For each game, be sure you know how to play it and then write a
+*brief* description of how it plays. Just a paragraph or two is fine.
 
-#| Your data definition fleshes out your specification. It must contain:
+Note that no two students may choose the same game; after the proposal
+class meeting, the students and instructors will make sure everyone
+has one game that they are actually going to implement and that no two
+people have the same game.
 
-   1. The data definition for your world and all its parts.
+## Specification (workshop during class on Nov 16th, worth 5 points)
 
-   2. A wishlist of functions that you expect you will need to write,
-      each with a signature and purpose. (We expect this to be at least
-      10 functions, but if you think carefully, you may have many more.
-      Some will be obvious helpers for others. No trivial functions, however.)
+The specification of your game must list at least 8 functional
+requirements that your game will satisfy when it is complete. These
+are things that the game does, explained as clearly and concisely as
+you can. The number 8 is not a hard and fast rule as combining two
+requirements into one or splitting one requirement into three isn't
+difficult. Instead, think that you should try to find 8 different
+aspects of the game. In your feedback for the proposal, we will let
+you know if we agree that the game is complex enough and we will let
+you know if the description contains enough detail.
 
-The data definition meeting is your chance to get feedback on the essentials
-of your design before you actually write lots of code. Because your instructors
-are experienced designers, we are likely to have suggestions for you that will
-improve your design. If you think carefully about the data definitions and get
-feedback on them, it will be valuable to you and will save you more trouble
-later.
+For example, for the faller game, you might write these requirements:
+
+> 1. Objects fall from the top of the screen.
+>
+> 2. The user controls a continuously moving paddle at the bottom of the
+>    screen by hitting a key to change its direction.
+>
+> 3. A score is maintained and displayed.
+>
+> 4. Whenever the user changes directions of the paddle, the score
+>    decrements (but does not go negative).
+>
+> 5. Whenever an object strikes the paddle, it disappears and the score
+>    increases by 10.
+>
+> 6. Objects that are directly above the paddle (en route to hit it) are
+>    displayed differently than objects that aren't.
+>
+> 7. A special kind of object, displayed differently, causes the paddle
+>    to increase in size when caught.
+>
+> 8. A special kind of object, displayed differently, causes the paddle
+>    to decrease in size when caught.
+
+Be prepared to show your list of 8 items and discuss them with the
+class -- we may ask for changes as we discuss them.
+
+## Data Definition (due in private meetings on Nov 19th)
+
+Your data definition fleshes out your specification. It must contain:
+
+1. The data definition for your world and all its parts.
+
+2. A wishlist of functions that you expect you will need to write,
+   each with a signature and purpose. (We expect this to be at least
+   10 functions, but if you think carefully, you may have many
+   more. Some will be obvious helpers for others. No trivial
+   functions, however.)
+
+The data definition meeting is your chance to get feedback on the
+essentials of your design before you actually write lots of
+code. Because your instructors are experienced designers, we are likely
+to have suggestions for you that will improve your design. If you
+think carefully about the data definitions and get feedback on them,
+it will be valuable to you and will save you more trouble later.
 
 Feel free to implement a few functions as a way to test out your data
-definitions
-the better quality data definitions you provide at this stage the better
-feedback you will get and the less time the next step will take.
+definitions; the better quality data definitions you provide at this
+stage the better feedback you will get and the less time the next step
+will take.
 
-Before the meeting, push a file that has a clear and accurate listing of all of
-the elements of the specification (in a comment) and the data definition.
-This commit will affect the grading of the next section.
-|#
+Before the meeting, push a file that has a clear and accurate listing
+of all of the elements of the specification (in a comment) and the
+data definition. This commit will affect the grading of the next
+section.
+
+## Code (due on Dec 3rd, worth 75 points)
+
+You should have a complete working version of the game by the final
+project presentations on Dec 3rd. (Even if you end up presenting on
+Dec 4th your code is still due on Dec 3rd.)
+
+If you ask for a code review before Nov 30th, you will get one with a
+2 day turnaround on the code. No code reviews may be requested after
+Nov 30th. A code review is not required.
+
+Of the 75 points, 50 points will be awarded based on your
+specification. For each item in your specification, you must point to
+a test case (or test cases) that demonstrate that the game supports
+that item and you must describe how, when one plays the game, to
+experience that specification item. The 50 points will be evenly
+divided among the specification items, awarding an equal number for
+each specification item that was correctly implemented.
+
+The remaining 25 points will be awarded based on following the design
+recipe. That is, each place in the code where the design recipe was
+not followed will result in deductions, up to a maximum of 25 points
+off.
+
+## Presentation (on Dec 3rd and 4th, worth 5 points)
+
+Each student will present their game for about 10 minutes during the
+final exam week, time *TBA*. Divide the time into two parts, a demo
+of your game and some highlights of the code.
+
+- For the game demo, use your implementation and play it, narrating
+  what's happening. If necessary, use a slide or two to introduce the
+  game.
+
+- For the code, prepare slides that contain specific parts of your
+  code, starting with your world data definition (and other
+  supplementary data definitions). Connect the different aspects of
+  the data to the demo you gave (possibly including screenshots to
+  clarify connections). If they are especially important or
+  interesting, show us the signature/purpose/header for a few of the
+  most interesting functions. Use nicely formatting slides for any code
+  you show us, don't just scroll around in DrRacket.
